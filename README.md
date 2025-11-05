@@ -118,11 +118,40 @@ D. 함수 호출 및 복귀 (Call & Return)
 2. `STACK`에 `Type 3` (함수 호출) 노드를 Push 한다. 이 노드에는 현재 라인 번호 (`curLine`)가 기록된다. (복귀할 위치)
 3. `GetVal`이 찾아준 codeline (함수 f가 정의된 라인)으로 이동하기 위해, fclose -> `fopen` -> `fgets` 루프를 실행한다.
 4. `WillBreak = 1` 플래그를 세워, 수식 계산을 중단하고, 메인 루프로 돌아간다.
+복귀 (Return)과정 (end 키워드 처리 중):
+1. 함수 f의 end 라인에 도달한다.
+2. GetLastFunctionCall(Stack)는 type 3 노드를 찾아 STACK에 저장된 복귀 위치를 반환한다.
+3. 함수의 최종값 LastExpReturn을 LastFunctionReturn에 저장한다.
+4. 다시 fclose -> fopen -> fgets 루프를 실행하여 복귀 위치(14라인) 직전까지 이동한다.
+5. STACK에서 type 3 노드가 나올 때까지 Pop을 반복한다.(함수 f에서 사용된 지역 변수 b, c, 파라미터 a, 함수 정의 f를 모두 스택에서 제거)
+6. willBreak = 0 이므로, 14라인의 수식 ((6 + f(c) / b)를 다시 계산(re-evaluating)한다.
+7. 수익 계산 중 f를 만나 GetVal을 호출하면, 이번에는 LastFunctionReturn != -999 (즉,2)이므로, 이 값은 f(c)의 결과로 사용하여 수식을 최종 계산한다.
+8.  LastFunctionReturn = -999로 리셋한다.
+
+## 5. input1.spl 실행 추적 (Step-by-Step)
+input.spl 코드
+`function f(int a)  (Line 1)
+begin
+   int b = 6;
+   int c = 2;
+   ((b+c)/a);      (Line 5)
+end
+function main()   (Line 8)
+begin
+   int a = 1;
+   int b = 2;
+   int c = 4;
+   ((6 + f(c) ) / b); (Line 14)
+end`
+outputs.txt: input1.spl -> 4
 
 
+## 6. 결론
+이 Basic Interpreter는 C언어의 파일 처리, 동적 메모리 할당, 포인터를 활용한 스택 자료구조를 통해 구현되었다.
 
+특히 함수 호출을 C의 재귀 호출(Call Stack)에 의존하지 않고, STACK 자료구조와 파일 포인터(fseek/rewind 대신 fclose/fopen)를 조합하여 직접 '실행 문맥'을 관리하는 방식이 인상적이다. 이는 운영체제의 컨텍스트 스위칭(Context Switching)이나 CPU의 프로그램 카운터(PC) 동작 원리를 단순화하여 보여주는 훌륭한 예시이다.
 
-
+input3.spl과 input4.spl에 if 키워드가 있지만, basic_interpreter.c 코드에는 if를 처리하는 로직이 전혀 없다. strtok로 첫 단어를 분리할 때 if를 무시하고 다음 라인으로 넘어가기 때문에 if 조건과 관계없이 다음 줄의 수식을 실행하거나 무시하게 된다. (예: input4.spl은 if ( c > b )가 참이므로 (1+g(x))가 실행되어 5가 됨). 이는 인터프리터의 불완전한 파싱 로직을 보여준다.
 
 
 
