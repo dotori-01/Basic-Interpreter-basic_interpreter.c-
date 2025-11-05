@@ -68,6 +68,13 @@ struct node {
          2. `fclose(filePtr)`와 `fopen(argv[1], "r")`을 사용해 파일 포인터를 처음으로 되돌린다.
          3. `fgets` 루프를 통해 함수를 호출했던 라인(`sline`) 직전까지 이동한다.
          4. `STACK`에서 `Pop`을 반복하며 `Type 3` (함수 호출) 노드를 찾아 제거한다. (호출 스택 정리)
+         5.  종료: 루프가 끝나면(파일 끝) `fclose(filePtr)`로 파일을 닫고 `FreeAll(STACK)`로 모든 메모리를 해제한 뒤 종료한다.
+
+## 4. 핵심 기능 분석 (Line by Line)
+
+### A. 스택 관리 (Push / Pop)
+- `Push`, `PushOp`, `PushPostfix` : `malloc` 으로 새 노드를 할당하고, 값을 채운 뒤, 스택의 `top`을 이 새 노드로 교체한다.  (연결 리스트의 헤드에 삽입)
+- `Pop`, `PopOp`, `PopPostfix` : `top` 노드의 데이터를 임시 변수에 저장하고, `top`을 `top->next`로 이동시킨 뒤, 기존 `top` 노드를 `free` 한다.
         
 
 
