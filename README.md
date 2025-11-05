@@ -76,13 +76,48 @@ struct node {
 - `Push`, `PushOp`, `PushPostfix` : `malloc` 으로 새 노드를 할당하고, 값을 채운 뒤, 스택의 `top`을 이 새 노드로 교체한다.  (연결 리스트의 헤드에 삽입)
 - `Pop`, `PopOp`, `PopPostfix` : `top` 노드의 데이터를 임시 변수에 저장하고, `top`을 `top->next`로 이동시킨 뒤, 기존 `top` 노드를 `free` 한다.
         
+### B.수식 계산(`(`키워드 처리)
+수식 라인(예:`((b+c)/a`)이 감지되면, 두 단계로 처리된다.
 
+1단계: 중위(Infix) -> 후위(Postfix) 변환
+- `lineyedek` (원본라인)을 한 글자(`char`)씩 순화한다.
+- 숫자/변수: `postfix` 배열에 바로 추가한다.
+   - 변수인 경우 (`isalpha`): `GetVal`을 호출한다.
+- 연산자 (+,-,*,/):
+  - MathStack이 비어있으면 PushOp .
+  - MathStack에 연산자가 있으면, Priotry 함수로 우선순위로 비교한다.
+  - 새 연산자의 우선순위가 스택 top의 연산자보다 낮거나 같으면, 스택 top을 PopOp하여 postfix 배열에 추가하고, 새 연산자를 PushOp 한다. (예: a*b+ 상태에서 c가 들어오면 *를 pop함)
+  - 새 연산자의 우선순위가 높으면, 그냥 PushOp.
+- `)` (닫는 괄호): `MathStack`에서 `PopOp`을 하여 `postfix` 배열에 추가한다.(`(`는 스택에 넣지 않으므로 `(`가 나올 때까지 `pop`할 필요가 없는 단순한 구현)
+- 최종: `MathStack`에 남은 모든 연산자를 `PopOp`하여 `postfix` 배열에 추가한다.
 
+2단계:후위(Postfix) 수식 계산
+ - 변환된 `postfix` 배열을 한 글자씩 순화한다.
+ - 숫자: `postfix[i] - '0'` 을 통해 정수로 변환 후 `CalcStack` 에 `PushPostfix` 한다.
+ - 연산자:
+   - `val1 = PopPostfix(CalcStack)` (두 번째 피연산자)
+   - `val2 = PopPostfix(CalcStack)` (첫 번째 피연산자)
+   - `switch` 문을 통해 `val2 + val1` (혹은 -,*,/)연산을 수행한다.
+   - 결과(`resultVal`)를 다시 `CalcStack`에 `PushPostfix`한다.
+- 최종: `postfix` 배열 순화가 끝나면 `CalcStack->top>val`에 최종 계산 결과가 남는다. 이 값을 `LastExpReturn`에 저장한다.
 
+C. 변수/함수 값 조회 (GetVal)
+GetVal(char exp_name, int* line, Stack* stck) 함수는 이 인터프리터의 '심볼 테이블' 역할을 한다.
+1. STACK 의 top (가장 최신 데이터)부터 head 포인터로 순화한다.
+2. head->exp_data == exp_name (찾는 이름과 일치하는지) 확인한다.
+3. 일치하는 노드 발견 시:
+  - head->type == 1 (변수):head->val (변수 값)을 변환한다. (가장 나중에 선언된 변수, 즉 현재 스코프의 변수가 먼저 검색됨)
+  - head->type == 2 (함수): 포인터로 받는 line 변수에 head->line (함수 정의 라인)을 저장하고, -1을 반환한다.
+4. 못 찾으면 -999를 반환한다.
 
+D. 함수 호출 및 복귀 (Call & Return)
+이 인터프리터는 재귀적인 C 함수 호출이 아닌, 파일 포인터를 되감는 (rewind) 방식으로 함수 호출을 흉내 낸다.
 
-
-
+호출 (Call) 과정 ((수식 처리 중  GetVal이 -1 반환 시):
+1. 수식 f(c)에서 c 의 값을 GetVal로 찾아 CalingFuctionArgVal에 저장한다. (예:4)
+2. `STACK`에 `Type 3` (함수 호출) 노드를 Push 한다. 이 노드에는 현재 라인 번호 (`curLine`)가 기록된다. (복귀할 위치)
+3. `GetVal`이 찾아준 codeline (함수 f가 정의된 라인)으로 이동하기 위해, fclose -> `fopen` -> `fgets` 루프를 실행한다.
+4. `WillBreak = 1` 플래그를 세워, 수식 계산을 중단하고, 메인 루프로 돌아간다.
 
 
 
