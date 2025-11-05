@@ -8,7 +8,7 @@ OS 오전반  / 도현명
 ## 2. 핵심 자료구조 
 이 인터프리터는 C의 `struct`와 포인터를 이용해 3가지 핵심 스택(Stack)을 구현하여 프로그램을 실행한다.
 
-## A.메인 스택 (STACK)
+### A.메인 스택 (STACK)
 - 구조체: `struct node` / `Stack`
 - 용도: 프로그램의 모든 '상태'를 저장하는 가장 중요한 스택.
 - 저장 내용 (node.type):
@@ -27,7 +27,7 @@ struct node {
     struct node* next;
 };`
 
-## B.연산자 스택 (MathStack)
+### B.연산자 스택 (MathStack)
 - 구조체: `struct opnode` / `onstack`
 - 용도:수식 계산 시, 중위 표기법(Infix)을 후위 표기법(Postfix)으로 변환하기 위해 연산자(+,-,*,/)를 임시 저장한다.`
   struct opnode { 
@@ -35,7 +35,7 @@ struct node {
     struct opnode* next; 
 };`
 
-## C.피연산자 스택 (CalcStack)
+### C.피연산자 스택 (CalcStack)
 - 구조체: `struct postfixnode` / `PostfixStack`
 - 용도:후위 표기법(Postfix)으로 변환된 수식을 실제 계산하기 위해 피연산자(숫자)를 저장한다.
  ` struct postfixnode { 
@@ -49,14 +49,33 @@ struct node {
 2. 인자 확인: `ARGC != 2`인지 확인하여, 프로그램 실행 시 `.SPl` 파일이 정확히 1개 주어졌는지 검사한다.
 3. 파일 열기: `fopen(argv[1], "r")`로 입력 `.spl`파일을 연다.
 4. 메인 파싱 루프: while` (fgets(line, 4096, filePtr))`
-- 파일을 한 줄씩 읽어 `line` 버퍼에 저장한다.
-- `curLine`을 증가시켜 현재 라인 번호를 추적한다.
-- `rstrip()`으로 줄 끝의 공백/개행 문자를 제거한다.
-- `my_stricmp()`(대소문자 무시 문자열 비교)를 사용해 키워드를 분석한다.
+ - 파일을 한 줄씩 읽어 `line` 버퍼에 저장한다.
+ - `curLine`을 증가시켜 현재 라인 번호를 추적한다.
+ - `rstrip()`으로 줄 끝의 공백/개행 문자를 제거한다.
+ - `my_stricmp()`(대소문자 무시 문자열 비교)를 사용해 키워드를 분석한다.
 5. 키워드 분기:
   - `begin`/ `end`:`foundMain` 플래그가 1일 때 (main 함수 내부일 때)만 `type 4` 또는 `type 5` 노드를 `Push`한다.
   - `funtion`: `strtok`로 함수 이름을 파싱한다.
-    - 
+     - `type 2` 노드를 생성하고 함수 이름(exp_data)과 정의된 라인 번호(line)를 `STACK`에 `Push`한다.
+     - 함수 이름이 `main`이면 `foundMain = 1` 플래그를 세운다.
+     - `foundMain이` 1이고 함수가 `main`이 아니면(즉, `main` 이후에 정의된 다른 함수를 파싱 중이면), 파라미터 변수(예: `f(int a))`를 `type 1` 노드로 `STACK`에 `Push`한다. 이때 값은 `CalingFunctionArgVal` 에서 가져온다.
+     - `(` (수식):4. 핵심 기능 분석- B.수식 계산 참조.
+     - `end` (핵심 로직):
+        - `GetLastFunctionCall(STACK)`을 호출하여, 현재 `end`가 함수의 `end` 인지 (반환값 >0), `main`의 `end`인지(반환값 == 0) 확인한다.
+       - Main의 `end` (반환값 0): `LastExpReturn` (최종 계산 결과)을 `printf`로 출력하고 프로그램이 사실상 종료된다.
+       - 함수의 `end` (반환값 >0):
+         1. 함수의 최종 계산 값(`LastExpReturn`)을 `LastFunctionReturn`에 백업한다.
+         2. `fclose(filePtr)`와 `fopen(argv[1], "r")`을 사용해 파일 포인터를 처음으로 되돌린다.
+         3. `fgets` 루프를 통해 함수를 호출했던 라인(`sline`) 직전까지 이동한다.
+         4. `STACK`에서 `Pop`을 반복하며 `Type 3` (함수 호출) 노드를 찾아 제거한다. (호출 스택 정리)
+        
+
+
+
+
+
+
+
 
 
 
