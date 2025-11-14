@@ -200,10 +200,26 @@ struct postfixnode {
 
 `GetVal(char exp_name, int* line, Stack* stck)` 함수는 이 인터프리터의 '심볼 테이블' 역할을 한다.
 
-> **[그림 제안 3: GetVal과 변수 스코프]**
+> **[GetVal과 변수 스코프]**
 > `f` 함수 내부에서 `GetVal('c')`를 호출하는 시점의 `STACK` 상태를 그립니다.
 >
-> (예시 `STACK` 그림)
+> **[그림 3: GetVal('c') 호출 시점의 STACK 상태 (스코프)]**
+>
+> `input1.spl`의 5라인 `((b+c)/a)`가 실행되어 `GetVal('c')`를 호출하는 순간의 `STACK` 상태입니다. `GetVal`은 **Top**에서부터 검색을 시작합니다.
+
+| `STACK` (Top) | 노드 내용 (Node Content) | 설명 | GetVal('c') 검색 경로 |
+| :--- | :--- | :--- | :--- |
+| `Top` → | `[ type: 1, data: 'c', val: 2 ]` | `f` 함수의 지역 변수 `c` | **← 발견! (값 `2` 반환)** |
+| | `[ type: 1, data: 'b', val: 6 ]` | `f` 함수의 지역 변수 `b` | |
+| | `[ type: 1, data: 'a', val: 4 ]` | `f` 함수의 파라미터 `a` | |
+| | `[ type: 4 ]` | `f` 함수의 `begin` | |
+| | `[ type: 3, line: 14 ]` | `f` 함수 호출 정보 (복귀 라인) | |
+| | `[ type: 1, data: 'c', val: 4 ]` | `main` 함수의 변수 `c` | *(여기까지 검색되지 않음)* |
+| | `[ type: 1, data: 'b', val: 2 ]` | `main` 함수의 변수 `b` | |
+| | `[ type: 1, data: 'a', val: 1 ]` | `main` 함수의 변수 `a` | |
+| `...` | `... (이하 생략)` | | |
+
+> 이 표는 `GetVal`이 스택의 `Top`에서부터 검색(LIFO)하기 때문에, `main`의 `c=4`보다 `f`의 `c=2`가 먼저 발견되는 **변수 스코프(Scope)** 구현 원리를 보여줍니다.
 > `Top -> [type: 1, data: 'c', val: 2] (f의 c)`
 > `... -> [type: 1, data: 'b', val: 6] (f의 b)`
 > `... -> [type: 1, data: 'a', val: 4] (f의 a)`
