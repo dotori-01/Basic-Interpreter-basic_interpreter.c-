@@ -1,6 +1,6 @@
 # BASIC Interpreter Source Code Analysis
 
-**OS 오전반 / 20210015 도현명**
+**운영체제 과제 / OS 오전반 / 20210015 도현명**
 
 ## 1. 과제 목적
 
