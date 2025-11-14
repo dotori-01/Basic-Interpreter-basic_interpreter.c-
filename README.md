@@ -244,3 +244,22 @@ struct postfixnode {
 8.  `LastFunctionReturn = -999`로 리셋한다.
 
 <br>
+
+## 7. Input1.spl 실행 추적 (Step-by-Step)
+
+**`input1.spl` 코드**
+```spl
+function f(int a)  (Line 1)
+begin
+    int b = 6;
+    int c = 2;
+    ((b+c)/a);     (Line 5)
+end
+function main()    (Line 8)
+begin
+    int a = 1;
+    int b = 2;
+    int c = 4;
+    ((6 + f(c) ) / b); (Line 14)
+end
+```
