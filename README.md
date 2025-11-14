@@ -218,17 +218,15 @@ struct postfixnode {
 ```mermaid
 graph TD
     subgraph "1. 함수 호출 (Call) - 14라인: ((6 + f(c) ) / b)"
-        direction TB
         A[main() 14라인 읽기] --> B{GetVal('f') 호출};
-        B -- "함수(type 2) 발견<br/>(정의 라인: 1)" --> C[STACK.Push({type: 3, line: 14})<br/>(복귀 주소 14 저장)];
+        B -- "함수(type 2) 발견<br/>(정의 라인: 1)" --> C["STACK.Push(&#123;type: 3, line: 14&#125;)<br/>(복귀 주소 14 저장)"];
         C --> D[fclose() / fopen()<br/>파일 포인터 리셋];
         D --> E[function f() 1라인으로 점프];
     end
 
     subgraph "2. 함수 복귀 (Return) - 6라인: end"
-        direction TB
         F[f() 6라인 'end' 읽기] --> G{GetLastFunctionCall() 호출};
-        G -- "스택 Top에서 {type: 3} 검색" --> H[STACK에서 {type: 3, line: 14} 발견<br/>(복귀 주소 14 획득)];
+        G -- "스택 Top에서 {type: 3} 검색" --> H["STACK에서 &#123;type: 3, line: 14&#125; 발견<br/>(복귀 주소 14 획득)"];
         H --> I[STACK.Pop() 반복<br/>(f의 지역변수/파라미터 제거)];
         I --> J[fclose() / fopen()<br/>파일 포인터 리셋];
         J --> K[main() 14라인으로 복귀<br/>(수식 재계산)];
