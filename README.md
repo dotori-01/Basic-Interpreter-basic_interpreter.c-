@@ -215,16 +215,7 @@ struct postfixnode {
 >
 > 이 인터프리터는 C의 재귀 호출 스택을 사용하지 않고, `STACK`에 복귀 주소(라인)를 저장하고 `filePtr`를 `fclose()`/`fopen()`으로 되감는 방식으로 함수 호출을 흉내 냅니다.
 
-graph TD
-    A["1. 함수 호출(Call)\nmain() 14라인 읽기"] --> B{"GetVal('f') 호출"};
-    B -->|함수(type 2) 발견\n정의 라인 1| C["STACK.Push(type 3, line 14)\n복귀 주소 저장"];
-    C --> D["fclose() / fopen()\n파일 포인터 리셋"];
-    D --> E["function f() 1라인으로 점프"];
-    F["2. 함수 복귀(Return)\nf() 6라인 end 읽기"] --> G{"GetLastFunctionCall() 호출"};
-    G -->|스택 Top type 3 검색| H["STACK에서 type 3, line 14 발견\n복귀 주소 획득"];
-    H --> I["STACK.Pop() 반복\n지역변수 제거"];
-    I --> J["fclose() / fopen()\n파일 포인터 리셋"];
-    J --> K["main() 14라인으로 복귀\n수식 재계산"];
+<img width="1990" height="1518" alt="mermaid-diagram-2025-11-14-201804" src="https://github.com/user-attachments/assets/28bc137f-02eb-4d2c-b7ad-5f7c19017920" />
 
 > 1.  **함수 호출 (Call) 시점 (14라인):**
 >     * `filePtr`가 14라인을 가리킴.
@@ -232,15 +223,14 @@ graph TD
 >     * `fclose()` -> `fopen()`.
 >     * `filePtr`가 1라인으로 이동함.
 >
-> 2.  **함수 복귀 (Return) 시점 (6라인):**
+> 
+ 2.  **함수 복귀 (Return) 시점 (6라인):**
 >     * `filePtr`가 6라인을 가리킴.
 >     * `GetLastFunctionCall()` 호출 -> `STACK`에서 `[type: 3, line: 14]` 찾음 (복귀 주소 14 획득).
 >     * `f`의 지역 변수/파라미터를 `STACK`에서 `Pop` (스택 정리).
 >     * `fclose()` -> `fopen()`.
 >     * `filePtr`가 14라인으로 이동함.
 >
-> ``
-> ``
 
 **호출 (Call) 과정 (`(` 수식 처리 중 `GetVal`이 -1 반환 시):**
 
