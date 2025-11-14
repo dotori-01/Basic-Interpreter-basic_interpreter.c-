@@ -38,15 +38,15 @@
 
 ## 3. 프로그램 전체 구조도
 
-이 인터프리터는 `.spl` 파일을 입력받아, `main` 함수 내의 `while` 루프를 통해 한 줄씩 파싱하고 실행합니다. 3개의 핵심 스택을 사용하여 프로그램의 상태(STACK)와 수식 연산(MathStack, CalcStack)을 관리합니다.
+이 인터프리터는 .spl 파일을 입력받아, main 함수 내의 while 루프를 통해 한 줄씩 Process 함수로 전달하여 파싱하고 실행합니다. 3개의 핵심 스택을 사용하여 프로그램의 상태(STACK)와 수식 연산(OpStack, PostfixStack)을 관리합니다.
 
-아래 그림은 `main` 함수의 핵심 제어 흐름을 보여줍니다. `fgets`로 파일을 한 줄씩 읽고, `strtok`로 분리된 첫 번째 키워드를 바탕으로 각기 다른 기능을 수행합니다.
+아래 그림은 이 프로그램의 핵심 제어 흐름을 보여줍니다. main이 fgets로 파일을 한 줄씩 읽어 Process 함수로 전달하면, Process 함수는 strstr 함수로 해당 라인에 포함된 키워드(function, int, begin, end, if 등)를 감지하여 각기 다른 기능을 수행합니다.
 
  <img width="467" height="229" alt="image" src="https://github.com/user-attachments/assets/0b7cd0b9-931a-4d3e-b1ad-45c49dcff489" />
 
 * **`function`, `int`:** `STACK`에 변수나 함수 정의, 호출 정보 등 **프로그램 상태를 저장**합니다.
-* **`(` (수식):** `MathStack`과 `CalcStack`을 이용해 **수식을 연산**합니다.
-* **`end`:** `STACK`을 확인하여 `main`의 끝인지, 함수의 끝인지 판단하고 **프로그램 흐름을 제어** (종료 또는 복귀)합니다.
+* **`(` (수식):** `MathStack`과 `CalcStack`을 이용해 **수식을 연산**합니다. 이 과정에서 함수 호출(f(c))이 감지되면 프로그램 흐름을 제어합니다.
+* **`end`: `Pop` 함수를 호출하여 `STACK`을 확인하고 스코프를 정리하며, 함수 호출(`type 3`) 마커를 만날 경우 프로그램 흐름을 제어 (복귀)합니다.
 
 <br>
 
