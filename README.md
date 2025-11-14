@@ -359,4 +359,4 @@ outputs.txt: input1.spl -> 4
 
 특히 함수 호출을 C의 재귀 호출(Call Stack)에 의존하지 않고, `STACK` 자료구조와 파일 포인터(fseek/rewind 대신 fclose/fopen)를 조합하여 직접 '실행 문맥'을 관리하는 방식이 인상적이다. 이는 운영체제의 **컨텍스트 스위칭(Context Switching)**이나 CPU의 **프로그램 카운터(PC)** 동작 원리를 단순화하여 보여주는 좋은 예시이다.
 
-`input3.spl`과 `input4.spl`에 `if` 키워드가 있지만, `basic_interpreter.c` 코드에는 `if`를 처리하는 로직이 전혀 없다. `strtok`로 첫 단어를 분리할 때 `if`를 무시하고 다음 라인으로 넘어가기 때문에 `if` 조건과 관계없이 다음 줄의 수식을 실행하거나 무시하게 된다. 이는 인터프리터의 불완전한 파싱 로직을 보여준다.
+`input3.spl`, `input4.spl`에서 볼 수 있듯이, Process 함수 내에 if 키워드를 처리하는 로직`(strstr(line, "if"))`이 정상적으로 구현되어 있어, 조건 분기 역시 올바르게 수행되는 것을 확인했다.
