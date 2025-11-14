@@ -67,14 +67,14 @@
 * **특징:** 변수의 스코프(Scope)와 함수 호출/복귀를 이 스택을 통해 관리한다.
 
 
-`/* 1 var, 2 function, 3 function call, 4 begin, 5 end */
+``/* 1 var, 2 function, 3 function call, 4 begin, 5 end */
 struct node {
     int type; 
     char exp_data;
     int val;
     int line;
     struct node* next;
-};`
+};``
 
 ### B. 연산자 스택 (MathStack)
 
