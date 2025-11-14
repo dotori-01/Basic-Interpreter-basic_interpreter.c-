@@ -75,3 +75,14 @@ struct node {
     int line;
     struct node* next;
 };
+
+### B. 연산자 스택 (MathStack)
+
+* **구조체:** `struct opnode` / `OpStack` (코드에는 `opstack`으로 되어 있으나 편의상 `MathStack`으로 칭함)
+* **용도:** 수식 계산 시, 중위 표기법(Infix)을 후위 표기법(Postfix)으로 변환하기 위해 연산자(+, -, *, /)를 임시 저장한다.
+
+```c
+struct opnode { 
+    char op; 
+    struct opnode* next; 
+};
