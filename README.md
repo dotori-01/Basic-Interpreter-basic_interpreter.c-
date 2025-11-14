@@ -1,6 +1,6 @@
 # Basic Interpreter (`basic_interpreter.c`) 소스 코드 분석
 
-> **OS 오전반 / 20210015 도현명**
+**OS 오전반 / 20210015 도현명**
 
 ## 1. 과제 목적
 
