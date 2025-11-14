@@ -175,37 +175,7 @@ struct postfixnode {
 **1단계: 중위(Infix) -> 후위(Postfix) 변환**
 
 * `lineyedek` (원본라인)을 한 글자(`char`)씩 순회한다.
-* **숫자/변수:** `postfix` 배열에 바로 추가한다.
-    * 변수인 경우 (`isalpha`): `GetVal`을 호출한다.
-* **연산자 (+,-,\*,\/):**
-    * `MathStack`이 비어있으면 `PushOp` .
-    * `MathStack`에 연산자가 있으면, `Priotry` 함수로 우선순위를 비교한다.
-    * 새 연산자의 우선순위가 스택 `top`의 연산자보다 낮거나 같으면, 스택 `top`을 `PopOp`하여 `postfix` 배열에 추가하고, 새 연산자를 `PushOp` 한다.
-    * 새 연산자의 우선순위가 높으면, 그냥 `PushOp`.
-* **`)` (닫는 괄호):** `MathStack`에서 `PopOp`을 하여 `postfix` 배열에 추가한다.
-* **최종:** `MathStack`에 남은 모든 연산자를 `PopOp`하여 `postfix` 배열에 추가한다.
-
-**2단계: 후위(Postfix) 수식 계산**
-
-* 변환된 `postfix` 배열을 한 글자씩 순회한다.
-* **숫자:** `postfix[i] - '0'` 을 통해 정수로 변환 후 `CalcStack` 에 `PushPostfix` 한다.
-* **연산자:**
-    * `val1 = PopPostfix(CalcStack)` (두 번째 피연산자)
-    * `val2 = PopPostfix(CalcStack)` (첫 번째 피연산자)
-    * `switch` 문을 통해 `val2 + val1` (혹은 -, *, /)연산을 수행한다.
-    * 결과(`resultVal`)를 다시 `CalcStack`에 `PushPostfix`한다.
-* **최종:** `postfix` 배열 순화가 끝나면 `CalcStack->top->val`에 최종 계산 결과가 남는다. 이 값을 `LastExpReturn`에 저장한다.
-
-### C. 변수/함수 값 조회 (GetVal)
-
-`GetVal(char exp_name, int* line, Stack* stck)` 함수는 이 인터프리터의 '심볼 테이블' 역할을 한다.
-
-**[GetVal과 변수 스코프]**
-> `f` 함수 내부에서 `GetVal('c')`를 호출하는 시점의 `STACK` 상태를 그립니다.
->
-**[그림 3: GetVal('c') 호출 시점의 STACK 상태 (스코프)]**
->
-> `input1.spl`의 5라인 `((b+c)/a)`가 실행되어 `GetVal('c')`를 호출하는 순간의 `STACK` 상태입니다. `GetVal`은 **Top**에서부터 검색을 시작합니다.
+* **숫자/변수:** `po다
 
 | `STACK` (Top) | 노드 내용 (Node Content) | 설명 | GetVal('c') 검색 경로 |
 | :--- | :--- | :--- | :--- |
@@ -219,7 +189,7 @@ struct postfixnode {
 | | `[ type: 1, data: 'a', val: 1 ]` | `main` 함수의 변수 `a` | |
 | `...` | `... (이하 생략)` | | |
 
-> 이 표는 `GetVal`이 스택의 `Top`에서부터 검색(LIFO)하기 때문에, `main`의 `c=4`보다 `f`의 `c=2`가 먼저 발견되는 **변수 스코프(Scope)** 구현 원리를 보여줍니다.
+> 이 표는 `GetVal`이 스택의 `Top`에서부터 검색(LIFO)하기 때문에, `main`의 `c=4`보다 `f`의 `c=2`가 먼저 발견되는 **변수 스코프(Scope)** 구현 원리를 보여준다.
 > `Top -> [type: 1, data: 'c', val: 2] (f의 c)`
 > `... -> [type: 1, data: 'b', val: 6] (f의 b)`
 > `... -> [type: 1, data: 'a', val: 4] (f의 a)`
@@ -227,9 +197,8 @@ struct postfixnode {
 > `... -> [type: 1, data: 'c', val: 4] (main의 c)`
 > `...`
 >
-> 이 그림을 통해 `GetVal`이 `top`에서부터 검색하므로 `f`의 `c=2`가 `main`의 `c=4`보다 먼저 반환됨을 보여줍니다. (스코프 구현)
->
-> ``
+> 이 그림을 통해 `GetVal`이 `top`에서부터 검색하므로 `f`의 `c=2`가 `main`의 `c=4`보다 먼저 반환됨을 보여준다.
+
 
 1.  `STACK` 의 `top` (가장 최신 데이터)부터 `head` 포인터로 순회한다.
 2.  `head->exp_data == exp_name` (찾는 이름과 일치하는지) 확인한다.
