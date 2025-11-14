@@ -268,10 +268,9 @@ outputs.txt: input1.spl -> 4
 
 ### A. 실행 환경 및 결과
 
-> **[MSYS2 실행 화면 캡처 삽입]**
 > 여기에 `interpreter.exe input1.spl`을 실행하여 `Output=4`가 출력된 MSYS2 화면 캡처를 삽입하세요.
-><img width="357" height="121" alt="스크린샷 2025-11-14 183341" src="https://github.com/user-attachments/assets/9139aa6e-e989-4b3d-9376-c9403a8fc0cb" />
-> `![MSYS2_input1_execution](image_path.png)`
+><img width="357" height="118" alt="스크린샷 2025-11-14 183341" src="https://github.com/user-attachments/assets/4a5a48d5-285a-4e66-ba31-1516ea613f9c" />
+> `![MSYS2_input1_execution]`
 
 ### B. 1단계: `main` 함수 탐색 및 변수 정의
 
