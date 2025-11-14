@@ -217,7 +217,7 @@ struct postfixnode {
 
 <img width="1990" height="1518" alt="mermaid-diagram-2025-11-14-201804" src="https://github.com/user-attachments/assets/28bc137f-02eb-4d2c-b7ad-5f7c19017920" />
 
-> 1.  **함수 호출 (Call) 시점 (14라인):**
+1.  **함수 호출 (Call) 시점 (14라인):**
 >     * `filePtr`가 14라인을 가리킴.
 >     * `GetVal('f')` 호출 -> `STACK`에 `[type: 3, line: 14]` (복귀 주소) PUSH.
 >     * `fclose()` -> `fopen()`.
