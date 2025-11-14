@@ -211,28 +211,23 @@ struct postfixnode {
 
 이 인터프리터는 재귀적인 C 함수 호출이 아닌, **파일 포인터를 되감는 (rewind)** 방식으로 함수 호출을 흉내 낸다.
 
-> **[그림 4: 함수 호출(Call) 및 복귀(Return) 흐름도]**
+**[그림 4: 함수 호출(Call) 및 복귀(Return) 흐름도]**
 >
 > 이 인터프리터는 C의 재귀 호출 스택을 사용하지 않고, `STACK`에 복귀 주소(라인)를 저장하고 `filePtr`를 `fclose()`/`fopen()`으로 되감는 방식으로 함수 호출을 흉내 냅니다.
 
 ```mermaid
 graph TD
-    subgraph "1. 함수 호출 (Call) - 14라인"
-        A[main() 14라인 읽기] --> B{GetVal('f') 호출};
-        B -- "함수(type 2) 발견<br/>(정의 라인: 1)" --> C["STACK.Push(&#123;type: 3, line: 14&#125;)<br/>(복귀 주소 14 저장)"];
-        C --> D[fclose() / fopen()<br/>파일 포인터 리셋];
-        D --> E[function f() 1라인으로 점프];
-    end
+    A["<b>1. 함수 호출 (Call)</b><br/>main() 14라인 읽기"] --> B{"GetVal('f') 호출"};
+    B -- "함수(type 2) 발견<br/>(정의 라인: 1)" --> C["STACK.Push(&#123;type: 3, line: 14&#125;)<br/>(복귀 주소 14 저장)"];
+    C --> D[fclose() / fopen()<br/>파일 포인터 리셋];
+    D --> E[function f() 1라인으로 점프];
 
-    subgraph "2. 함수 복귀 (Return) - 6라인"
-        F[f() 6라인 'end' 읽기] --> G{GetLastFunctionCall() 호출};
-        G -- "스택 Top에서 {type: 3} 검색" --> H["STACK에서 &#123;type: 3, line: 14&#125; 발견<br/>(복귀 주소 14 획득)"];
-        H --> I[STACK.Pop() 반복<br/>(f의 지역변수/파라미터 제거)];
-        I --> J[fclose() / fopen()<br/>파일 포인터 리셋];
-        J --> K[main() 14라인으로 복귀<br/>(수식 재계산)];
-    end
+    F["<b>2. 함수 복귀 (Return)</b><br/>f() 6라인 'end' 읽기"] --> G{"GetLastFunctionCall() 호출"};
+    G -- "스택 Top에서 {type: 3} 검색" --> H["STACK에서 &#123;type: 3, line: 14&#125; 발견<br/>(복귀 주소 14 획득)"];
+    H --> I[STACK.Pop() 반복<br/>(f의 지역변수/파라미터 제거)];
+    I --> J[fclose() / fopen()<br/>파일 포인터 리셋];
+    J --> K[main() 14라인으로 복귀<br/>(수식 재계산)];
 ```
-
 > 1.  **함수 호출 (Call) 시점 (14라인):**
 >     * `filePtr`가 14라인을 가리킴.
 >     * `GetVal('f')` 호출 -> `STACK`에 `[type: 3, line: 14]` (복귀 주소) PUSH.
