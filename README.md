@@ -1,4 +1,4 @@
-# Basic Interpreter (`basic_interpreter.c`) 소스 코드 분석
+# BASIC Interpreter Source Code Analysis
 
 **OS 오전반 / 20210015 도현명**
 
