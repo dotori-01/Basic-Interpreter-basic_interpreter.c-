@@ -132,4 +132,115 @@ struct postfixnode {
 
 <br>
 
+## 6. 핵심 기능 분석 (Line by Line)
 
+### A. 스택 관리 (Push / Pop)
+
+* **`Push`**, **`PushOp`**, **`PushPostfix`** : `malloc` 으로 새 노드를 할당하고, 값을 채운 뒤, 스택의 `top`을 이 새 노드로 교체한다. (연결 리스트의 헤드에 삽입)
+* **`Pop`**, **`PopOp`**, **`PopPostfix`** : `top` 노드의 데이터를 임시 변수에 저장하고, `top`을 `top->next`로 이동시킨 뒤, 기존 `top` 노드를 `free` 한다.
+
+### B. 수식 계산 (`(` 키워드 처리)
+
+수식 라인(예: `((b+c)/a)`)이 감지되면, 두 단계로 처리된다.
+
+> **[그림 제안 2: 수식 계산 과정]**
+> 이 부분에 `input1.spl`의 `((b+c)/a)`가 `(6+2)/4`로 변환되고, 최종 결과 `2`가 나오는 과정을 2단계로 나누어 그립니다.
+>
+> 1.  **Infix -> Postfix 변환:** `lineyedek`(입력), `postfix` 배열(출력), `MathStack`(임시)의 상태 변화를 표로 보여줍니다. (결과: `62+4/`)
+> 2.  **Postfix 계산:** `postfix` 배열을 읽으면서 `CalcStack`에 값이 PUSH/POP되고 연산되는 과정을 보여줍니다. (결과: `2`)
+>
+> ``
+> ``
+
+**1단계: 중위(Infix) -> 후위(Postfix) 변환**
+
+* `lineyedek` (원본라인)을 한 글자(`char`)씩 순회한다.
+* **숫자/변수:** `postfix` 배열에 바로 추가한다.
+    * 변수인 경우 (`isalpha`): `GetVal`을 호출한다.
+* **연산자 (+,-,\*,\/):**
+    * `MathStack`이 비어있으면 `PushOp` .
+    * `MathStack`에 연산자가 있으면, `Priotry` 함수로 우선순위를 비교한다.
+    * 새 연산자의 우선순위가 스택 `top`의 연산자보다 낮거나 같으면, 스택 `top`을 `PopOp`하여 `postfix` 배열에 추가하고, 새 연산자를 `PushOp` 한다.
+    * 새 연산자의 우선순위가 높으면, 그냥 `PushOp`.
+* **`)` (닫는 괄호):** `MathStack`에서 `PopOp`을 하여 `postfix` 배열에 추가한다.
+* **최종:** `MathStack`에 남은 모든 연산자를 `PopOp`하여 `postfix` 배열에 추가한다.
+
+**2단계: 후위(Postfix) 수식 계산**
+
+* 변환된 `postfix` 배열을 한 글자씩 순회한다.
+* **숫자:** `postfix[i] - '0'` 을 통해 정수로 변환 후 `CalcStack` 에 `PushPostfix` 한다.
+* **연산자:**
+    * `val1 = PopPostfix(CalcStack)` (두 번째 피연산자)
+    * `val2 = PopPostfix(CalcStack)` (첫 번째 피연산자)
+    * `switch` 문을 통해 `val2 + val1` (혹은 -, *, /)연산을 수행한다.
+    * 결과(`resultVal`)를 다시 `CalcStack`에 `PushPostfix`한다.
+* **최종:** `postfix` 배열 순화가 끝나면 `CalcStack->top->val`에 최종 계산 결과가 남는다. 이 값을 `LastExpReturn`에 저장한다.
+
+### C. 변수/함수 값 조회 (GetVal)
+
+`GetVal(char exp_name, int* line, Stack* stck)` 함수는 이 인터프리터의 '심볼 테이블' 역할을 한다.
+
+> **[그림 제안 3: GetVal과 변수 스코프]**
+> `f` 함수 내부에서 `GetVal('c')`를 호출하는 시점의 `STACK` 상태를 그립니다.
+>
+> (예시 `STACK` 그림)
+> `Top -> [type: 1, data: 'c', val: 2] (f의 c)`
+> `... -> [type: 1, data: 'b', val: 6] (f의 b)`
+> `... -> [type: 1, data: 'a', val: 4] (f의 a)`
+> `... -> [type: 3, line: 14] (f 호출 정보)`
+> `... -> [type: 1, data: 'c', val: 4] (main의 c)`
+> `...`
+>
+> 이 그림을 통해 `GetVal`이 `top`에서부터 검색하므로 `f`의 `c=2`가 `main`의 `c=4`보다 먼저 반환됨을 보여줍니다. (스코프 구현)
+>
+> ``
+
+1.  `STACK` 의 `top` (가장 최신 데이터)부터 `head` 포인터로 순회한다.
+2.  `head->exp_data == exp_name` (찾는 이름과 일치하는지) 확인한다.
+3.  **일치하는 노드 발견 시:**
+    * `head->type == 1` (변수): `head->val` (변수 값)을 반환한다. (가장 나중에 선언된 변수, 즉 현재 스코프의 변수가 먼저 검색됨)
+    * `head->type == 2` (함수): 포인터로 받는 `line` 변수에 `head->line` (함수 정의 라인)을 저장하고, -1을 반환한다.
+4.  못 찾으면 -999를 반환한다.
+
+### D. 함수 호출 및 복귀 (Call & Return)
+
+이 인터프리터는 재귀적인 C 함수 호출이 아닌, **파일 포인터를 되감는 (rewind)** 방식으로 함수 호출을 흉내 낸다.
+
+> **[그림 제안 4: 함수 호출/복귀 흐름도]**
+> 이 인터프리터에서 가장 복잡하고 핵심적인 로직입니다. 파일 포인터(`filePtr`)와 `STACK`의 상태 변화를 2단계로 나누어 그립니다.
+>
+> 1.  **함수 호출 (Call) 시점 (14라인):**
+>     * `filePtr`가 14라인을 가리킴.
+>     * `GetVal('f')` 호출 -> `STACK`에 `[type: 3, line: 14]` (복귀 주소) PUSH.
+>     * `fclose()` -> `fopen()`.
+>     * `filePtr`가 1라인으로 이동함.
+>
+> 2.  **함수 복귀 (Return) 시점 (6라인):**
+>     * `filePtr`가 6라인을 가리킴.
+>     * `GetLastFunctionCall()` 호출 -> `STACK`에서 `[type: 3, line: 14]` 찾음 (복귀 주소 14 획득).
+>     * `f`의 지역 변수/파라미터를 `STACK`에서 `Pop` (스택 정리).
+>     * `fclose()` -> `fopen()`.
+>     * `filePtr`가 14라인으로 이동함.
+>
+> ``
+> ``
+
+**호출 (Call) 과정 (`(` 수식 처리 중 `GetVal`이 -1 반환 시):**
+
+1.  수식 `f(c)`에서 `c` 의 값을 `GetVal`로 찾아 `CalingFunctionArgVal`에 저장한다. (예: 4)
+2.  `STACK`에 `Type 3` (함수 호출) 노드를 `Push` 한다. 이 노드에는 현재 라인 번호 (`curLine`)가 기록된다. (복귀할 위치)
+3.  `GetVal`이 찾아준 `codeline` (함수 `f`가 정의된 라인)으로 이동하기 위해, `fclose` -> `fopen` -> `fgets` 루프를 실행한다.
+4.  `WillBreak = 1` 플래그를 세워, 수식 계산을 중단하고, 메인 루프로 돌아간다.
+
+**복귀 (Return) 과정 (`end` 키워드 처리 중):**
+
+1.  함수 `f`의 `end` 라인에 도달한다.
+2.  `GetLastFunctionCall(STACK)`는 `type 3` 노드를 찾아 `STACK`에 저장된 복귀 위치를 반환한다.
+3.  함수의 최종값 `LastExpReturn`을 `LastFunctionReturn`에 저장한다.
+4.  다시 `fclose` -> `fopen` -> `fgets` 루프를 실행하여 복귀 위치(14라인) 직전까지 이동한다.
+5.  `STACK`에서 `type 3` 노드가 나올 때까지 `Pop`을 반복한다.(함수 `f`에서 사용된 지역 변수 `b`, `c`, 파라미터 `a`, 함수 정의 `f`를 모두 스택에서 제거)
+6.  `willBreak = 0` 이므로, 14라인의 수식 `((6 + f(c) ) / b)`를 다시 계산(re-evaluating)한다.
+7.  수식 계산 중 `f`를 만나 `GetVal`을 호출하면, 이번에는 `LastFunctionReturn != -999` (즉, 2)이므로, 이 값은 `f(c)`의 결과로 사용하여 수식을 최종 계산한다.
+8.  `LastFunctionReturn = -999`로 리셋한다.
+
+<br>
