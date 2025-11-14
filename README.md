@@ -42,11 +42,11 @@
 
 > <img width="467" height="229" alt="image" src="https://github.com/user-attachments/assets/0b7cd0b9-931a-4d3e-b1ad-45c49dcff489" />
 > **[전체 구조도]**
->
-> (예시: `input.spl 파일` -> `[ main() 함수 (fgets) ]` -> `[ 키워드 분석 ]` -> (분기)
-> * (분기 1) `int`, `function` -> `[ STACK ]` (상태 저장)
-> * (분기 2) `(` 수식 -> `[ MathStack ]` & `[ CalcStack ]` (연산)
-> * (분기 3) `end` -> `[ STACK ]` (호출 스택 확인) -> `printf()` (출력) 또는 `filePtr` 되감기
+
+ (예시: `input.spl 파일` -> `[ main() 함수 (fgets) ]` -> `[ 키워드 분석 ]` -> (분기)
+* (분기 1) `int`, `function` -> `[ STACK ]` (상태 저장)
+* (분기 2) `(` 수식 -> `[ MathStack ]` & `[ CalcStack ]` (연산)
+* (분기 3) `end` -> `[ STACK ]` (호출 스택 확인) -> `printf()` (출력) 또는 `filePtr` 되감기
 
 <br>
 
