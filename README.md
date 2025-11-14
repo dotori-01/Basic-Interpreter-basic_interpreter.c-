@@ -168,9 +168,9 @@ struct postfixnode {
 | **`4`** | `Push(4)` | `[ 8, 4 ]` | 숫자는 스택에 PUSH |
 | **`/`** | `val1=Pop(4)`, `val2=Pop(8)`, `Push(8/4)` | `[ 2 ]` | 연산자. `val2 / val1` 수행 |
 | *종료* | 스택 `top`의 값 `2`를 `LastExpReturn`에 저장 | `[ 2 ]` | 연산 종료. 최종 결과: **2** |
-> 읽은 토큰 (Token),MathStack (연산자 스택) 상태,postfix 배열 (출력),비고
+>    * 읽은 토큰 (Token),MathStack (연산자 스택) 상태,postfix 배열 (출력),비고
 > 
-> **Postfix 계산:** `postfix` 배열을 읽으면서 `CalcStack`에 값이 PUSH/POP되고 연산되는 과정을 보여줍니다. (결과: `2`)
+>    **Postfix 계산:** `postfix` 배열을 읽으면서 `CalcStack`에 값이 PUSH/POP되고 연산되는 과정을 보여줍니다. (결과: `2`)
 
 **1단계: 중위(Infix) -> 후위(Postfix) 변환**
 
