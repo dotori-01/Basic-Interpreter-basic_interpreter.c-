@@ -200,10 +200,10 @@ struct postfixnode {
 
 `GetVal(char exp_name, int* line, Stack* stck)` 함수는 이 인터프리터의 '심볼 테이블' 역할을 한다.
 
-> **[GetVal과 변수 스코프]**
+**[GetVal과 변수 스코프]**
 > `f` 함수 내부에서 `GetVal('c')`를 호출하는 시점의 `STACK` 상태를 그립니다.
 >
-> **[그림 3: GetVal('c') 호출 시점의 STACK 상태 (스코프)]**
+**[그림 3: GetVal('c') 호출 시점의 STACK 상태 (스코프)]**
 >
 > `input1.spl`의 5라인 `((b+c)/a)`가 실행되어 `GetVal('c')`를 호출하는 순간의 `STACK` 상태입니다. `GetVal`은 **Top**에서부터 검색을 시작합니다.
 
