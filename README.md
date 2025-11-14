@@ -266,3 +266,84 @@ end
 
 outputs.txt: input1.spl -> 4
 
+### A. 실행 환경 및 결과
+
+> **[MSYS2 실행 화면 캡처 삽입]**
+> 여기에 `interpreter.exe input1.spl`을 실행하여 `Output=4`가 출력된 MSYS2 화면 캡처를 삽입하세요.
+>
+> `![MSYS2_input1_execution](image_path.png)`
+
+### B. 1단계: `main` 함수 탐색 및 변수 정의
+
+1.  **Line 1-7:** `main` 루프가 `fgets` 실행. `foundMain = 0`.
+    * Line 1: `function f` 발견. `STACK`에 `Push {type: 2, data: 'f', line: 1}`.
+    * Line 2-6: `foundMain = 0`이므로 무시.
+2.  **Line 8:** `function main` 발견. `STACK`에 `Push {type: 2, data: 'm', line: 8}`. **`foundMain = 1`**로 설정됨.
+3.  **Line 9:** `begin` 발견. `STACK`에 `Push {type: 4}`.
+4.  **Line 10-12:** `int` 발견. 변수들을 `STACK`에 `Push`.
+    * `STACK` Top -> `{type: 1, data: 'c', val: 4}`
+    * `STACK` ... -> `{type: 1, data: 'b', val: 2}`
+    * `STACK` ... -> `{type: 1, data: 'a', val: 1}`
+
+### C. 2단계: `f(c)` 함수 호출
+
+5.  **Line 14:** `(` 수식 발견. 수식 분석 시작.
+    * `f` 발견 -> `GetVal('f', &codeline, STACK)` 호출.
+    * `GetVal`이 `{type: 2, data: 'f', line: 1}`을 찾음. `codeline = 1`, 반환값 `-1`.
+    * **함수 호출 로직** (D-1) 실행:
+        1.  인자 `c` -> `GetVal('c', ...)` 호출. `main`의 `c=4` 반환.
+        2.  `CalingFunctionArgVal = 4` 저장.
+        3.  `STACK`에 **`Push {type: 3, line: 14}` (복귀 주소 저장)**.
+        4.  `fclose(filePtr)`, `fopen(argv[1], "r")`. (파일 포인터 리셋)
+        5.  `WillBreak = 1` 설정. 14라인의 수식 계산 중단.
+6.  `main` 루프가 파일 처음부터 다시 시작 (`curLine = 0`).
+
+### D. 3단계: `f` 함수 내부 실행 및 반환
+
+7.  **Line 1:** `fgets` 실행. `function f` 발견.
+    * `foundMain = 1`이고 `main`이 아님 -> 파라미터 처리.
+    * 파라미터 `a`를 `STACK`에 `Push` (값은 `CalingFunctionArgVal`에서 가져옴).
+    * `STACK` Top -> **`{type: 1, data: 'a', val: 4}`**
+8.  **Line 2:** `begin`. `STACK`에 `Push {type: 4}`.
+9.  **Line 3-4:** `int b=6`, `int c=2`. `STACK`에 `Push`. (이 시점의 스택이 [그림 제안 3]의 모습)
+    * `STACK` Top -> **`{type: 1, data: 'c', val: 2}`**
+    * `STACK` ... -> **`{type: 1, data: 'b', val: 6}`**
+10. **Line 5:** `(` 수식 `((b+c)/a)` 발견.
+    * `GetVal('b')` -> 6 반환.
+    * `GetVal('c')` -> 2 반환.
+    * `GetVal('a')` -> 4 반환.
+    * (중위->후위->계산 과정, [그림 제안 2] 참고)
+    * 연산 결과 `(6+2)/4 = 2`.
+    * **`LastExpReturn = 2`**에 저장.
+11. **Line 6:** `end` 발견.
+    * `GetLastFunctionCall(STACK)` 호출.
+    * `STACK`에서 `{type: 3, line: 14}`를 찾음. **`sline = 14`** 반환.
+    * **함수 복귀 로직** (D-2) 실행:
+        1.  **`LastFunctionReturn = LastExpReturn` (즉, 2).**
+        2.  `fclose(filePtr)`, `fopen(argv[1], "r")`. (파일 리셋)
+        3.  `for` 루프로 13라인까지 `fgets` 실행. (파일 포인터를 14라인 직전으로 이동)
+        4.  `STACK`에서 `type 3` 노드를 찾을 때까지 `Pop` 실행 (f의 지역 변수/파라미터 `c, b, a` 및 `begin/end` 모두 제거됨).
+
+### E. 4단계: `main` 함수 복귀 및 최종 연산
+
+12. **Line 14:** `main` 루프가 14라인 `((6 + f(c) ) / b);`을 **다시 읽음**.
+    * `(` 수식 발견. 수식 분석 **재시작**.
+    * `f` 발견 -> `GetVal('f', ...)` 호출. 반환값 `-1`.
+    * **`LastFunctionReturn`이 -999가 아님 (값: 2).**
+    * `f(c)` 대신 값 `2`를 사용. (`postfix` 배열에 '2' 추가)
+    * **`LastFunctionReturn = -999`**로 리셋.
+    * `b` 발견 -> `GetVal('b')` -> `main`의 `b=2` 반환.
+    * (중위->후위->계산 과정)
+    * 연산: `(6 + 2) / 2 = 4`.
+    * **`LastExpReturn = 4`**에 저장.
+
+### F. 5단계: 프로그램 종료
+
+13. **Line 15:** `end` 발견.
+    * `GetLastFunctionCall(STACK)` 호출.
+    * `STACK`에 `type 3` 노드가 없음. **`sline = 0`** 반환.
+    * **`main` 종료 로직** 실행:
+        1.  **`printf("Output=%d", LastExpReturn)` 실행.**
+        2.  **출력: `Output=4`**
+14. `while (fgets...)` 루프가 파일 끝(EOF)을 만나 종료됨.
+15. `fclose`, `FreeAll`, `getch()` 실행 후 프로그램 종료.
