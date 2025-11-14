@@ -220,7 +220,6 @@ graph TD
     B -->|함수(type 2) 발견\n정의 라인 1| C["STACK.Push(type 3, line 14)\n복귀 주소 저장"];
     C --> D["fclose() / fopen()\n파일 포인터 리셋"];
     D --> E["function f() 1라인으로 점프"];
-
     F["2. 함수 복귀(Return)\nf() 6라인 end 읽기"] --> G{"GetLastFunctionCall() 호출"};
     G -->|스택 Top type 3 검색| H["STACK에서 type 3, line 14 발견\n복귀 주소 획득"];
     H --> I["STACK.Pop() 반복\n지역변수 제거"];
