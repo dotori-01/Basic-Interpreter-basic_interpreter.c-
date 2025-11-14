@@ -276,7 +276,7 @@ outputs.txt: input1.spl -> 4
 ### A. 실행 환경 및 결과
 
 ><img width="357" height="118" alt="스크린샷 2025-11-14 183341" src="https://github.com/user-attachments/assets/4a5a48d5-285a-4e66-ba31-1516ea613f9c" />
-> `![MSYS2_input1_execution]`
+`![MSYS2_input1_execution]`
 
 ### B. 1단계: `main` 함수 탐색 및 변수 정의
 
