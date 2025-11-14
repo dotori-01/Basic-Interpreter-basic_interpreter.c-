@@ -40,7 +40,7 @@
 
 이 인터프리터는 `.spl` 파일을 입력받아, `main` 함수 내의 `while` 루프를 통해 한 줄씩 파싱하고 실행합니다. 3개의 핵심 스택을 사용하여 프로그램의 상태(STACK)와 수식 연산(MathStack, CalcStack)을 관리합니다.
 
-> **[그림 제안 1: 전체 구조도]**
+> **[전체 구조도]**
 > <img width="467" height="229" alt="image" src="https://github.com/user-attachments/assets/0b7cd0b9-931a-4d3e-b1ad-45c49dcff489" />
 
 >
